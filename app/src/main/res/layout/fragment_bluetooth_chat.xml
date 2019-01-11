@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/pmfby_bg"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/pb"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:max="100"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/heding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/logo"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/heading_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:text="Weather"
+                android:textAllCaps="true"
+                android:textColor="@color/colorPrimary"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/hea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/logo"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="start"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:text="SECURE"
+                android:textAllCaps="true"
+                android:textColor="@color/colorPrimary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/logo"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="start"
+                android:layout_marginTop="3dp"
+                android:paddingTop="5dp"
+                android:text="pro"
+                android:textAllCaps="true"
+                android:textColor="@color/colorPrimary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
+
+
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="130dp"
+            android:layout_height="80dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/pmfby" />
+        <LinearLayout
+            android:id="@+id/lay1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edit_text_out"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/edt_bg"
+                android:hint="select date"
+                android:padding="5dp"
+                android:textColor="#000000"
+                android:editable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/button_send"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:background="@color/colorPrimary"
+                android:layout_margin="5dp"
+                android:textColor="@android:color/white"
+                android:text="@string/send" />
+
+            <Button
+                android:id="@+id/button_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:text="file" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/orr"
+            android:layout_below="@+id/lay1"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="OR"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
+
+        <LinearLayout
+            android:layout_below="@+id/orr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edit_text_from"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/edt_bg"
+                android:hint="@string/from_date"
+                android:padding="5dp"
+                android:textColor="#000000"
+                android:editable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_weight="1" />
+
+            <EditText
+                android:id="@+id/edit_text_to"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/edt_bg"
+                android:hint="@string/to_date"
+                android:padding="5dp"
+                android:textColor="#000000"
+                android:editable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/button_send1"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:background="@color/colorPrimary"
+                android:layout_margin="5dp"
+                android:textColor="@android:color/white"
+                android:text="@string/send" />
+
+
+        </LinearLayout>
+
+        <TextView
+
+            android:id="@+id/logs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:maxLength="35" />
+
+    </RelativeLayout>
+
+</LinearLayout>

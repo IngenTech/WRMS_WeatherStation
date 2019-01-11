@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/show_data"
+        android:icon="@android:drawable/alert_dark_frame"
+        android:title="Show Data"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/secure_connect_scan"
+        android:icon="@android:drawable/ic_lock_idle_low_battery"
+        android:title="@string/secure_connect"
+        app:showAsAction="ifRoom" />
+
+
+    <item
+        android:id="@+id/discoverable"
+        android:icon="@drawable/ic_action_device_access_bluetooth_searching"
+        android:title="@string/discoverable"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/send_error_log"
+        android:icon="@android:drawable/ic_lock_idle_low_battery"
+        android:title="Send Error"
+        app:showAsAction="ifRoom" />
+</menu>
