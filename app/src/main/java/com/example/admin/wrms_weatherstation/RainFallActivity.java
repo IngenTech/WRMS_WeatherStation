@@ -12,6 +12,8 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,18 +36,22 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class RainFallActivity extends AppCompatActivity {
 
     private ArrayList<WeatherSample> weatherSamples = new ArrayList<WeatherSample>();
     RecyclerView recyclerView;
     Spinner dateSpinner;
-
+    Spinner imeiSpinner;
     DBAdapter db;
     private EditText  fromDate, toDate;
     Button getButton;
+    String selectedIMEI = null;
+    DateAdapter adapterrrr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +62,8 @@ public class RainFallActivity extends AppCompatActivity {
         db = new DBAdapter(this);
         db.open();
         getButton = (Button)findViewById(R.id.get_button);
+
+        imeiSpinner = (Spinner)findViewById(R.id.spinner_imei);
 
         fromDate = (EditText) findViewById(R.id.edit_text_from);
         toDate = (EditText) findViewById(R.id.edit_text_to);
@@ -95,6 +103,10 @@ public class RainFallActivity extends AppCompatActivity {
                 String fromDDD = fromDate.getText().toString().trim();
                 String toDDD = toDate.getText().toString().trim();
                 ArrayList<String> dateeeeLIST = new ArrayList<String>();
+                ArrayList<String> imeiLIST = new ArrayList<String>();
+                ArrayList<String> totalRainfallList = new ArrayList<String>();
+                final ArrayList<String> imeiSpinnerLIST = new ArrayList<String>();
+                imeiSpinnerLIST.add("Select IMEI");
                 if (fromDDD!=null && fromDDD.length()>9) {
 
                     if (toDDD!=null && toDDD.length()>9) {
@@ -104,8 +116,33 @@ public class RainFallActivity extends AppCompatActivity {
                         if (betweenCur.moveToFirst()) {
                             do {
                                 String dattaa = betweenCur.getString(betweenCur.getColumnIndex(DBAdapter.DATE));
+                                String imeii = betweenCur.getString(betweenCur.getColumnIndex(DBAdapter.IMEI));
                                 Log.v("kjskdj", dattaa + "");
                                 dateeeeLIST.add(dattaa);
+                                imeiLIST.add(imeii);
+                                imeiSpinnerLIST.add(imeii);
+
+
+                                if (dattaa!=null && dattaa.length()>4) {
+                                    double total = 0.0;
+                                    Cursor dateByCursor = db.getDataByDate(dattaa,imeii);
+                                    // Cursor dateByCursor = db.getAllData();
+                                    Log.v("dateByCursor_count", "," + dateByCursor.getCount());
+                                    if (dateByCursor.moveToFirst()) {
+//
+                                        do {
+                                            String rainfallll = dateByCursor.getString(dateByCursor.getColumnIndex(DBAdapter.RAINFALL));
+                                            if (rainfallll!=null){
+                                                 total = total+Double.parseDouble(rainfallll);
+                                            }
+                                        }
+                                        while (dateByCursor.moveToNext());
+                                    }
+                                    totalRainfallList.add(""+total);
+                                }
+
+
+
                             }
                             while (betweenCur.moveToNext());
                         }
@@ -116,12 +153,45 @@ public class RainFallActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Please select FROM Date",Toast.LENGTH_SHORT).show();
                 }
 
+
+                Set<String> set = new HashSet<String>(imeiSpinnerLIST);
+                imeiSpinnerLIST.clear();
+                imeiSpinnerLIST.addAll(set);
+
+                ArrayAdapter<String> imeiAdapter = new ArrayAdapter<String>(RainFallActivity.this, android.R.layout.simple_spinner_item, imeiSpinnerLIST);
+                imeiAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                imeiSpinner.setAdapter(imeiAdapter);
+
+                imeiSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                        if (i>0) {
+                            selectedIMEI = imeiSpinnerLIST.get(i);
+                            if (selectedIMEI!=null && selectedIMEI.length()>0) {
+                                Log.v("filterStringg",selectedIMEI);
+                                adapterrrr.getFilter().filter(selectedIMEI.toString());
+                            }
+                        }else {
+                            selectedIMEI = null;
+                           /* if (selectedIMEI!=null && selectedIMEI.length()>0) {
+
+                                Log.v("filterStringg",selectedIMEI);
+                                adapterrrr.getFilter().filter(selectedIMEI.toString());
+                            }*/
+                        }
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
                 if (dateeeeLIST.size()>0){
-                    DateAdapter adapter = new DateAdapter(RainFallActivity.this, dateeeeLIST);
-                    recyclerView.setAdapter(adapter);
+                    adapterrrr = new DateAdapter(RainFallActivity.this, dateeeeLIST,imeiLIST,totalRainfallList);
+                    recyclerView.setAdapter(adapterrrr);
                 }
             }
         });
+
 
         fromDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,7 +200,6 @@ public class RainFallActivity extends AppCompatActivity {
                 final int year = mcurrentDate.get(Calendar.YEAR);
                 final int month = mcurrentDate.get(Calendar.MONTH);
                 final int day = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-
 
                 final DatePickerDialog mDatePicker = new DatePickerDialog(RainFallActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
@@ -211,7 +280,7 @@ public class RainFallActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
                 ArrayList<String> dateeeeLIST = new ArrayList<String>();
-
+                ArrayList<String> imeiLIST = new ArrayList<String>();
 
                 if (i==0) {
                     Cursor todayday = db.getToday();
@@ -263,8 +332,9 @@ public class RainFallActivity extends AppCompatActivity {
                 }
 
                 if (dateeeeLIST.size()>0){
-                    DateAdapter adapter = new DateAdapter(RainFallActivity.this, dateeeeLIST);
-                    recyclerView.setAdapter(adapter);
+                    adapterrrr = new DateAdapter(RainFallActivity.this, dateeeeLIST,imeiLIST,imeiLIST);
+
+                    recyclerView.setAdapter(adapterrrr);
                 }
             }
 
@@ -275,4 +345,28 @@ public class RainFallActivity extends AppCompatActivity {
         });
 
     }
+
+    /*public void addListener(){
+       *//* editSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                System.out.println("Text ["+s+"]");
+
+                if (s!=null) {
+                    adapter.getFilter().filter(s.toString());
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });*//*
+    }*/
 }

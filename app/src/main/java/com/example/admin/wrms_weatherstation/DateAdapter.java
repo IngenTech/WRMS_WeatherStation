@@ -17,27 +17,64 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
+public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> implements Filterable,ItemTouchHelperAdapter {
+
     private ArrayList<String> mDataset = new ArrayList<String>();
-
+    private ArrayList<String> imeiList = new ArrayList<String>();
+    private  ArrayList<String> listSuggesion = new ArrayList<String>();
+    private  ArrayList<String> totalRFList = new ArrayList<String>();
     public Context mContext;
     String imageString;
     TextToSpeech t1;
+
     DBAdapter db;
+    private ItemFilter mFilter = new ItemFilter();
+
+    @Override
+    public Filter getFilter() {
+        return mFilter;
+    }
+
+    @Override
+    public void onItemMove(int fromPosition, int toPosition) {
+
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(imeiList, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(imeiList, i, i - 1);
+            }
+        }
+
+        notifyItemMoved(fromPosition, toPosition);
+
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+        imeiList.remove(position);
+        notifyItemRemoved(position);
+    }
 
     // Provide a reference to the views for each data item
 // Complex data items may need more than one view per item, and
 // you provide access to all the views for a data item in a view holder
     public class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        public TextView date;
+        public TextView date,imeiTV,totalTV;
 
         public RelativeLayout detailRow;
 
@@ -46,6 +83,8 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
         public ViewHolder(View v) {
             super(v);
             date = (TextView) v.findViewById(R.id.date_row);
+            imeiTV = (TextView)v.findViewById(R.id.imei_row);
+            totalTV = (TextView)v.findViewById(R.id.total_row);
             detailRow = (RelativeLayout)v.findViewById(R.id.detail_row);
             db = new DBAdapter(mContext);
             db.open();
@@ -59,13 +98,16 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
 
     public void remove(int pos) {
         //   int position = mDataset.indexOf(item);
-        mDataset.remove(pos);
+        imeiList.remove(pos);
         notifyItemRemoved(pos);
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public DateAdapter(Context con, ArrayList<String> myDataset) {
+    public DateAdapter(Context con, ArrayList<String> myDataset,ArrayList<String> imeiL,ArrayList<String> trfList) {
         mDataset = myDataset;
+        imeiList = imeiL;
+        listSuggesion = imeiL;
+        totalRFList = trfList;
         mContext = con;
 
     }
@@ -84,20 +126,25 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(final DateAdapter.ViewHolder holder, final int position) {
 
-
         // holder.setIsRecyclable(false);
         holder.date.setText(mDataset.get(position));
+        holder.imeiTV.setText(imeiList.get(position));
+        if (totalRFList.size()>position){
+            holder.totalTV.setText(totalRFList.get(position));
+        }
+
         holder.detailRow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 db = new DBAdapter(mContext);
                 db.open();
                 String strDate = mDataset.get(position);
+                String imei_selected = imeiList.get(position);
 
                 ArrayList<WeatherSample> list = new ArrayList<WeatherSample>();
 
                 if (strDate!=null && strDate.length()>4) {
-                    Cursor dateByCursor = db.getDataByDate(strDate);
+                    Cursor dateByCursor = db.getDataByDate(strDate,imei_selected);
                    // Cursor dateByCursor = db.getAllData();
                     Log.v("dateByCursor_count", "," + dateByCursor.getCount());
                     if (dateByCursor.moveToFirst()) {
@@ -115,7 +162,7 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
                         while (dateByCursor.moveToNext());
                     }
                     if (list.size()>0) {
-                        datePopupMethod(strDate,list);
+                        datePopupMethod(strDate,imei_selected,list);
                     }else {
                         Toast.makeText(mContext,"No Rainfall found for selected date",Toast.LENGTH_SHORT).show();
                     }
@@ -128,11 +175,11 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataset.size();
+        return imeiList.size();
     }
 
 
-    public void datePopupMethod(String celectedDate,ArrayList<WeatherSample> listRainfall) {
+    public void datePopupMethod(String selectedDate,String selectedIMEI,ArrayList<WeatherSample> listRainfall) {
 
         final Dialog dialog = new Dialog(mContext, R.style.DialogSlideAnim);
 
@@ -163,7 +210,7 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
 
         RecyclerView recyclerView = (RecyclerView) dialog.findViewById(R.id.recyclerview_rainfall);
         TextView datetText = (TextView) dialog.findViewById(R.id.date_heading);
-        datetText.setText(celectedDate+"");
+        datetText.setText(selectedDate+" ( "+selectedIMEI+" ) ");
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager ddLayoutManager = new LinearLayoutManager(mContext);
@@ -186,7 +233,46 @@ public class DateAdapter  extends RecyclerView.Adapter<DateAdapter.ViewHolder> {
         dialog.show();
     }
 
+    private class ItemFilter extends Filter {
 
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+
+            String filterString = constraint.toString().toLowerCase();
+
+
+            Log.v("filterStringg",""+filterString);
+
+            FilterResults results = new FilterResults();
+
+            final List<String> list = listSuggesion;
+            int count = list.size();
+            final ArrayList<String> nlist = new ArrayList<String>(count);
+
+            String filterableString ;
+
+            for (int i = 0; i < count; i++) {
+                filterableString = ""+list.get(i);
+                if (filterableString.toLowerCase().contains(filterString)) {
+                    String mBookServiceModel = list.get(i);
+                    nlist.add(mBookServiceModel);
+                }
+            }
+
+            results.values = nlist;
+            results.count = nlist.size();
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            imeiList = (ArrayList<String>) results.values;
+
+            Log.v("imeiListCount",imeiList.size()+"");
+            notifyDataSetChanged();
+        }
+    }
 
 
 }

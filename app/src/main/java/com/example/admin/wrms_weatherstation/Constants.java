@@ -34,6 +34,8 @@ public interface Constants {
 
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "wrms_station";
+
+    public static String DEVICE_IMEI = "device_imei";
     public static final String TOAST = "toast";
     public static final String FILE_START = "!!!@START@!!!";
     public static final String FILE_END = "!!!@END@!!!";

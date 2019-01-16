@@ -13,6 +13,20 @@
         android:background="@drawable/pmfby_bg"
         android:orientation="vertical">
 
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="10dp"
+            android:padding="5dp"
+            android:text="OFF/ON "
+
+            android:layout_below="@+id/logo"
+            android:textStyle="bold"
+            android:theme="@style/SCBSwitch"
+            android:layout_alignParentRight="true" />
+
         <ProgressBar
             android:id="@+id/pb"
             style="?android:attr/progressBarStyleHorizontal"
@@ -85,6 +99,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
             android:background="@drawable/pmfby" />
+
+
         <LinearLayout
             android:id="@+id/lay1"
             android:layout_width="match_parent"
@@ -188,6 +204,10 @@
             android:id="@+id/logs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="22sp"
             android:visibility="visible"
              />
 

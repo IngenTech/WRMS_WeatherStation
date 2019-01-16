@@ -34,9 +34,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +70,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static com.example.admin.wrms_weatherstation.Constants.DEVICE_IMEI;
 
 
 /**
@@ -114,6 +118,7 @@ public class BluetoothChatFragment extends Fragment {
     private ProgressBar pb;
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
 
+    Switch switchButton;
     String recievedData = "";
 
     List<String> dates = new ArrayList<String>();
@@ -189,6 +194,7 @@ public class BluetoothChatFragment extends Fragment {
         fromDate = (EditText) view.findViewById(R.id.edit_text_from);
         toDate = (EditText) view.findViewById(R.id.edit_text_to);
         mSendButton = (Button) view.findViewById(R.id.button_send);
+        switchButton = (Switch)view.findViewById(R.id.switch1);
         mSendButton1 = (Button) view.findViewById(R.id.button_send1);
         mLog = (TextView) view.findViewById(R.id.logs);
         mFileBtn = (Button) view.findViewById(R.id.button_file);
@@ -383,7 +389,7 @@ public class BluetoothChatFragment extends Fragment {
                     if (null != view) {
                         TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
                         String message = textView.getText().toString();
-                       /* message = "#Start;\n" +
+                       /*String message = "#START;\n" +
                                 "07/01/2019,00:00:01,0.5\n" +
                                 "07/01/2019,01:00:01,0.0 \n" +
                                 "07/01/2019,04:00:01,0.25 \n" +
@@ -402,11 +408,25 @@ public class BluetoothChatFragment extends Fragment {
                                 "07/01/2019,20:00:01,0.0\n" +
                                 "07/01/2019,21:00:01,0.0\n" +
                                 "07/01/2019,22:00:01,0.0\n" +
-                                "#End;";*/
+                                "#END;";*/
                         sendMessage(message);
                     }
                 } else {
                     Toast.makeText(getActivity(), "Please select correct date", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b){
+
+                    Toast.makeText(getActivity(),"Switch ON",Toast.LENGTH_SHORT).show();
+                    sendMessage("ON");
+                }else {
+                    Toast.makeText(getActivity(),"Switch OFF",Toast.LENGTH_SHORT).show();
+                    sendMessage("OFF");
                 }
             }
         });
@@ -551,6 +571,10 @@ public class BluetoothChatFragment extends Fragment {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     // mLog.append("\n" + mConnectedDeviceName + ":  " + readMessage);
+
+
+                    AppConstant.DEVICE_IMEI = mConnectedDeviceName;
+
 
                     if (recievedData != null && recievedData.length() > 4) {
                         recievedData = recievedData + readMessage;
@@ -738,7 +762,7 @@ public class BluetoothChatFragment extends Fragment {
                 boolean resultPhone = Utility.checkPermissionGallery(getActivity());
                 if (resultPhone) {
 
-                    final File path =
+                    /*final File path =
                             Environment.getExternalStoragePublicDirectory
                                     (
                                             //Environment.DIRECTORY_PICTURES
@@ -746,11 +770,9 @@ public class BluetoothChatFragment extends Fragment {
                                     );
 
 
-                    final File logFile = new File(path, "rainfall.txt");
+                    final File logFile = new File(path, "rainfall.txt");*/
 
-
-                    //  File logFile = new File(Environment.getExternalStorageDirectory(), "wrms_station_error.txt");
-                    String filePath = Environment.getExternalStorageDirectory().toString() + "/rainfall.txt";
+                    File logFile = new File(Environment.getExternalStorageDirectory(), "wrms_station_error.txt");
                     //   File logFile = new File(filePath);
                     if (logFile.exists()) {
 
@@ -1022,7 +1044,7 @@ public class BluetoothChatFragment extends Fragment {
                 String rainfall_value = weatherSamples.get(i).getRainfall();
                 String hourrrr = weatherSamples.get(i).getSumHours();
                 if (dddddaaatt != null && dddddaaatt.length() > 4) {
-                    Cursor cursor = db.getDateList();
+                    Cursor cursor = db.getDateList(AppConstant.DEVICE_IMEI);
 
 
                     try {
@@ -1041,7 +1063,7 @@ public class BluetoothChatFragment extends Fragment {
                         } else {
 
                             // insertRainfallData(dddddaaatt,hourrrr,rainfall_value);
-                            insertDateData(dddddaaatt);
+                           // insertDateData(dddddaaatt);
                         }
                     } finally {
                         cursor.close();
@@ -1051,7 +1073,7 @@ public class BluetoothChatFragment extends Fragment {
             }
             if (flag) {
                 System.out.println("Inserting to db");
-                insertDateData(dddddaaatt);
+              //  insertDateData(dddddaaatt);
             }
 
 
@@ -1103,7 +1125,7 @@ public class BluetoothChatFragment extends Fragment {
             String rainfall_value = weatherSamples.get(i).getRainfall();
             String hourrrr = weatherSamples.get(i).getSumHours();
             if (dddddaaatt != null && dddddaaatt.length() > 4) {
-                Cursor cursor = db.getDateList();
+                Cursor cursor = db.getDateList(AppConstant.DEVICE_IMEI);
 
 
                 try {
@@ -1121,7 +1143,9 @@ public class BluetoothChatFragment extends Fragment {
                     } else {
 
                         // insertRainfallData(dddddaaatt,hourrrr,rainfall_value);
-                        insertDateData(dddddaaatt);
+                        if (AppConstant.DEVICE_IMEI!=null && AppConstant.DEVICE_IMEI.length()>4) {
+                            insertDateData(dddddaaatt,AppConstant.DEVICE_IMEI);
+                        }
                     }
                 } finally {
                     cursor.close();
@@ -1131,16 +1155,19 @@ public class BluetoothChatFragment extends Fragment {
         }
         if (flag) {
             System.out.println("Inserting to db");
-            insertDateData(dddddaaatt);
+            if (AppConstant.DEVICE_IMEI!=null && AppConstant.DEVICE_IMEI.length()>4) {
+                insertDateData(dddddaaatt,AppConstant.DEVICE_IMEI);
+            }
         }
 
 
     }
 
-    private void insertDateData(final String date) {
+    private void insertDateData(final String date,String imei) {
 
 
         ContentValues values = new ContentValues();
+        values.put(DBAdapter.IMEI, imei);
         values.put(DBAdapter.DATE, date);
         db.db.insert(DBAdapter.TABLE_DATE, null, values);
 
@@ -1151,15 +1178,16 @@ public class BluetoothChatFragment extends Fragment {
             String dddddaaatt = weatherSamples.get(i).getDate();
             String rainfall_value = weatherSamples.get(i).getRainfall();
             String hourrrr = weatherSamples.get(i).getSumHours();
-            insertRainfallData(dddddaaatt, hourrrr, rainfall_value);
+            insertRainfallData(dddddaaatt, hourrrr, rainfall_value,imei);
 
 
         }
     }
 
-    private synchronized void insertRainfallData(String dateee, String hoursss, String rainfalll) {
+    private synchronized void insertRainfallData(String dateee, String hoursss, String rainfalll,String imei) {
 
         ContentValues values = new ContentValues();
+        values.put(DBAdapter.IMEI, imei);
         values.put(DBAdapter.DATE, dateee);
         values.put(DBAdapter.HOURS, hoursss);
         values.put(DBAdapter.RAINFALL, rainfalll);

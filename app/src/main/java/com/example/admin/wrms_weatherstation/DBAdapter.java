@@ -11,7 +11,7 @@ public class DBAdapter {
 
     // Initial Configuration
     public static final String DB_NAME = "wrms_weather_station";
-    private static final int DATABASE_VER = 1;
+    private static final int DATABASE_VER = 2;
     private static final String TAG = "DBAdapter";
 
     private final Context context;
@@ -30,6 +30,7 @@ public class DBAdapter {
     public static final String RAINFALL = "rainfall";
     public static final String HOURS = "hour";
     public static final String DATE = "date";
+    public static final String IMEI = "imei";
 
 
 
@@ -39,11 +40,13 @@ public class DBAdapter {
     private static final String CREATE_DATE_TABLE = "CREATE TABLE "
             + TABLE_DATE + " ("
             + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + IMEI + " TEXT, "
             + DATE + " DATETIME);";
 
     private static final String CREATE_RAINFALL_TABLE = "CREATE TABLE "
             + TABLE_DATE_RAINFALL + " ("
             + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + IMEI + " TEXT, "
             + DATE + " TEXT, "
             + HOURS + " TEXT, "
             + RAINFALL + " TEXT);";
@@ -97,13 +100,15 @@ public class DBAdapter {
         DBHelper.close();
     }
 
-    public Cursor getDateList() throws SQLException {
-        return db.query(TABLE_DATE, new String[]{ID, DATE}, null, null, null, null, null, "100");
+    public Cursor getDateList(String imei) throws SQLException {
+        return db.query(TABLE_DATE, new String[]{ID, DATE}, IMEI + "='" + imei + "'", null, null, null, null, "100");
     }
 
 
-    public Cursor getDataByDate(String datee) {
-        return db.query(true, TABLE_DATE_RAINFALL, null, DATE + "='" + datee + "'", null, null, null, null, null);
+    public Cursor getDataByDate(String datee,String imei) {
+
+
+        return db.query(true, TABLE_DATE_RAINFALL, null, DATE + "='" + datee + "' AND " + IMEI + " ='" + imei + "'", null, null, null, null, null);
     }
     public Cursor getAllData() {
         return db.query(true, TABLE_DATE_RAINFALL, null, null, null, null, null, null, null);
