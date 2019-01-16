@@ -15,6 +15,7 @@
 
     <!-- Options Menu -->
     <string name="secure_connect">Connect a device</string>
+    <string name="secure_connect_in">Connect a device</string>
     <string name="discoverable">discoverable</string>
     <string name="str_crash">crashed</string>
     <string name="from_date">from date</string>

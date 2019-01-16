@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
  * This thread runs during a connection with a remote device.
  * It handles all incoming and outgoing transmissions.
  */
-class ConnectedThread extends Thread {
+/*class ConnectedThread extends Thread {
 
     private static final String TAG = "ConnectedThread";
     private final BluetoothSocket mmSocket;
@@ -184,10 +184,10 @@ class ConnectedThread extends Thread {
 
     volatile boolean fileWrite;
 
-    /**
+    *//**
      * writes in stream FILE_START -> FILE_NAME + FILE_LENGTH + DATA -> FILE_END
      * @param f
-     */
+     *//*
 
     public void writeFile(final File f) {
         (new Thread() {
@@ -254,7 +254,7 @@ class ConnectedThread extends Thread {
         result[0] = (byte) (i >> 24);
         result[1] = (byte) (i >> 16);
         result[2] = (byte) (i >> 8);
-        result[3] = (byte) (i /*>> 0*/);
+        result[3] = (byte) (i *//*>> 0*//*);
 
         return result;
     }
@@ -265,4 +265,4 @@ class ConnectedThread extends Thread {
                 (a[1] & 0xFF) << 16 |
                 (a[0] & 0xFF) << 24;
     }
-}
+}*/

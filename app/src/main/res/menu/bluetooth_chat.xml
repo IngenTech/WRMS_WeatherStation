@@ -11,6 +11,13 @@
         android:id="@+id/secure_connect_scan"
         android:icon="@android:drawable/ic_lock_idle_low_battery"
         android:title="@string/secure_connect"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/insecure_connect_scan"
+        android:icon="@android:drawable/ic_lock_idle_low_battery"
+        android:title="@string/secure_connect_in"
         app:showAsAction="ifRoom" />
 
 

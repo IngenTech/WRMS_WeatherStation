@@ -18,7 +18,7 @@
         android:supportsRtl="true">
         <activity
             android:name=".MainActivity"
-            android:label="Weather Station"
+            android:label="Weather Sense"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

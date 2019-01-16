@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelUuid;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -50,15 +51,21 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -81,6 +88,7 @@ public class BluetoothChatFragment extends Fragment {
     private Button mSendButton1;
 
     DBAdapter db;
+    int counttt = 0;
 
     /**
      * Name of the connected device
@@ -104,6 +112,13 @@ public class BluetoothChatFragment extends Fragment {
     private TextView mLog;
     private Button mFileBtn;
     private ProgressBar pb;
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+
+    String recievedData = "";
+
+    List<String> dates = new ArrayList<String>();
+    boolean flagPop = false;
+    String fromDateeee = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -117,7 +132,10 @@ public class BluetoothChatFragment extends Fragment {
             FragmentActivity activity = getActivity();
             Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             activity.finish();
+
         }
+
+
     }
 
     @Override
@@ -154,17 +172,14 @@ public class BluetoothChatFragment extends Fragment {
             if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
                 // Start the Bluetooth chat services
 
-
                 mChatService.start();
             }
         }
     }
 
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_bluetooth_chat, container, false);
     }
 
@@ -183,6 +198,34 @@ public class BluetoothChatFragment extends Fragment {
         db.open();
         //  db.deleteDataOlderThan30Days();
 
+
+/*
+        try {
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            Method getUuidsMethod = BluetoothAdapter.class.getDeclaredMethod("getUuids", null);
+            ParcelUuid[] uuids = (ParcelUuid[]) getUuidsMethod.invoke(adapter, null);
+            String stttsss = "";
+            if(uuids != null) {
+                for (ParcelUuid uuid : uuids) {
+
+
+                    stttsss =stttsss+","+ uuid.getUuid().toString();
+
+                }
+            }else{
+                Log.d("VISHALLLLLLLLL", "Uuids not found, be sure to enable Bluetooth!");
+            }
+            Log.d("VISHALLLLLLLLL", "UUID: " +stttsss);
+            mLog.setText(""+stttsss);
+            // Toast.makeText(getActivity(),"UUID: " + stttsss,Toast.LENGTH_LONG).show();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+*/
 
         mOutEditText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,19 +247,19 @@ public class BluetoothChatFragment extends Fragment {
 
                         String day1 = null;
                         String month1 = null;
-                        if (selectedday<10){
-                            day1 = "0"+selectedday;
-                        }else {
-                            day1 = ""+selectedday;
+                        if (selectedday < 10) {
+                            day1 = "0" + selectedday;
+                        } else {
+                            day1 = "" + selectedday;
                         }
 
-                        if (selectedmonth<10){
-                            month1 = "0"+(selectedmonth+1);
-                        }else {
-                            month1 = ""+(selectedmonth+1);
+                        if (selectedmonth < 10) {
+                            month1 = "0" + (selectedmonth + 1);
+                        } else {
+                            month1 = "" + (selectedmonth + 1);
                         }
 
-                        String strrr = day1+""+month1+""+selectedyear;
+                        String strrr = day1 + "" + month1 + "" + selectedyear;
                         mOutEditText.setText(strrr);
 
                     }
@@ -247,22 +290,26 @@ public class BluetoothChatFragment extends Fragment {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
 
 
+                        fromDateeee = "";
+                        fromDate.setText("");
                         String day1 = null;
                         String month1 = null;
-                        if (selectedday<10){
-                            day1 = "0"+selectedday;
-                        }else {
-                            day1 = ""+selectedday;
+                        if (selectedday < 10) {
+                            day1 = "0" + selectedday;
+                        } else {
+                            day1 = "" + selectedday;
                         }
 
-                        if (selectedmonth<10){
-                            month1 = "0"+(selectedmonth+1);
-                        }else {
-                            month1 = ""+(selectedmonth+1);
+                        if (selectedmonth < 10) {
+                            month1 = "0" + (selectedmonth + 1);
+                        } else {
+                            month1 = "" + (selectedmonth + 1);
                         }
 
-                        String strrr = day1+""+month1+""+selectedyear;
+                        String strrr = selectedyear + "-" + month1 + "-" + day1;
                         fromDate.setText(strrr);
+
+                        fromDateeee = day1 + "" + month1 + "" + selectedyear;
 
                     }
                 }, year, month, day);
@@ -289,19 +336,19 @@ public class BluetoothChatFragment extends Fragment {
 
                         String day1 = null;
                         String month1 = null;
-                        if (selectedday<10){
-                            day1 = "0"+selectedday;
-                        }else {
-                            day1 = ""+selectedday;
+                        if (selectedday < 10) {
+                            day1 = "0" + selectedday;
+                        } else {
+                            day1 = "" + selectedday;
                         }
 
-                        if (selectedmonth<10){
-                            month1 = "0"+(selectedmonth+1);
-                        }else {
-                            month1 = ""+(selectedmonth+1);
+                        if (selectedmonth < 10) {
+                            month1 = "0" + (selectedmonth + 1);
+                        } else {
+                            month1 = "" + (selectedmonth + 1);
                         }
 
-                        String strrr = day1+""+month1+""+selectedyear;
+                        String strrr = selectedyear + "-" + month1 + "-" + day1;
                         toDate.setText(strrr);
 
                     }
@@ -327,14 +374,16 @@ public class BluetoothChatFragment extends Fragment {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Send a message using content of the edit text widget
-
+                 counttt = 0;
+                dates = new ArrayList<String>();
+                recievedData = "";
                 String smsms = mOutEditText.getText().toString().trim();
                 if (smsms != null && smsms.length() > 4) {
                     View view = getView();
                     if (null != view) {
                         TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
                         String message = textView.getText().toString();
-                        message = "#Start;\n" +
+                       /* message = "#Start;\n" +
                                 "07/01/2019,00:00:01,0.5\n" +
                                 "07/01/2019,01:00:01,0.0 \n" +
                                 "07/01/2019,04:00:01,0.25 \n" +
@@ -353,7 +402,7 @@ public class BluetoothChatFragment extends Fragment {
                                 "07/01/2019,20:00:01,0.0\n" +
                                 "07/01/2019,21:00:01,0.0\n" +
                                 "07/01/2019,22:00:01,0.0\n" +
-                                "#End;";
+                                "#End;";*/
                         sendMessage(message);
                     }
                 } else {
@@ -366,16 +415,23 @@ public class BluetoothChatFragment extends Fragment {
             public void onClick(View v) {
                 // Send a message using content of the edit text widget
 
+                counttt = 0;
+                recievedData = "";
+                dates = new ArrayList<String>();
+
                 String fromD = fromDate.getText().toString().trim();
                 String toD = toDate.getText().toString().trim();
                 if (fromD != null && fromD.length() > 4) {
-                    if (fromD != null && fromD.length() > 4) {
+                    if (toD != null && toD.length() > 4) {
+
+                        dates = getDates(fromD, toD);
+
                         View view = getView();
                         if (null != view) {
-                            TextView textView1 = (TextView) view.findViewById(R.id.edit_text_from);
-                            TextView textView2 = (TextView) view.findViewById(R.id.edit_text_to);
-                            String message = textView1.getText().toString().trim() + "-" + textView2.getText().toString().trim();
-                            sendMessage(message);
+
+                            if (fromDateeee != null && fromDateeee.length() > 4) {
+                                sendMessage(fromDateeee);
+                            }
                         }
                     } else {
                         Toast.makeText(getActivity(), "Please select to date", Toast.LENGTH_SHORT).show();
@@ -454,7 +510,7 @@ public class BluetoothChatFragment extends Fragment {
 
     private void setStatus(CharSequence subTitle) {
         Log.v("xyxyxyxyxy_subtitle", "xyxyxyxyx" + subTitle);
-        mLog.append("\n" + subTitle);
+        mLog.setText("\n" + subTitle);
     }
 
     /**
@@ -488,15 +544,24 @@ public class BluetoothChatFragment extends Fragment {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    mLog.append("\nMe:  " + writeMessage);
+                    //  mLog.append("\nMe:  " + writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    mLog.append("\n" + mConnectedDeviceName + ":  " + readMessage);
+                    // mLog.append("\n" + mConnectedDeviceName + ":  " + readMessage);
 
-                    readMessagePopup(readMessage + "");
+                    if (recievedData != null && recievedData.length() > 4) {
+                        recievedData = recievedData + readMessage;
+                    } else {
+                        recievedData = readMessage;
+                    }
+
+                    if (recievedData != null && recievedData.contains("#END;")) {
+                        readMessagePopup(recievedData + "", counttt);
+                    }
+
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -504,13 +569,13 @@ public class BluetoothChatFragment extends Fragment {
                     break;
                 case Constants.MESSAGE_TOAST:
                     if (null != activity) {
-                        mLog.append("\n" + msg.getData().getString(Constants.TOAST));
+                        mLog.setText("\n" + msg.getData().getString(Constants.TOAST));
                     }
                     break;
                 case Constants.MESSAGE_END:
                     final File file = (File) msg.obj;
                     pb.setVisibility(View.GONE);
-                    mLog.append("\n" + "file transfer end");
+                    mLog.setText("\n" + "file transfer end");
                     if (file != null) {
                         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                             @Override
@@ -570,11 +635,11 @@ public class BluetoothChatFragment extends Fragment {
                     break;
                 case Constants.MESSAGE_START:
                     pb.setVisibility(View.VISIBLE);
-                    mLog.append("\n" + "file transfer start...");
+                    mLog.setText("\n" + "file transfer start...");
                     break;
                 case Constants.MESSAGE_FILE_ERROR:
                     pb.setVisibility(View.GONE);
-                    mLog.append("\n" + "error file transfer");
+                    mLog.setText("\n" + "error file transfer");
                     break;
             }
         }
@@ -585,7 +650,13 @@ public class BluetoothChatFragment extends Fragment {
             case REQUEST_CONNECT_DEVICE_SECURE:
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
-                    connectDevice(data);
+                    connectDevice(data, true);
+                }
+                break;
+            case REQUEST_CONNECT_DEVICE_INSECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, false);
                 }
                 break;
             case REQUEST_ENABLE_BT:
@@ -605,21 +676,21 @@ public class BluetoothChatFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     //      Log.v("filepAthhhh", data.getData().getPath());
 
-                    String filePath = Environment.getExternalStorageDirectory() + "/rainfall.csv";
+                  /*  String filePath = Environment.getExternalStorageDirectory() + "/rainfall.csv";
                     Log.v("filepAthhhh", filePath);
-                    mChatService.writeFile(new File(filePath));
+                    mChatService.writeFile(new File(filePath));*/
                 }
         }
     }
 
-    private void connectDevice(Intent data) {
+    private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
         Log.v("cocoococococ", "cococooc");
         String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
-        mChatService.connect(device);
+        mChatService.connect(device, secure);
     }
 
     @Override
@@ -643,6 +714,12 @@ public class BluetoothChatFragment extends Fragment {
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
                 return true;
             }
+            case R.id.insecure_connect_scan: {
+                // Launch the DeviceListActivity to see devices and do scan
+                Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_INSECURE);
+                return true;
+            }
             case R.id.discoverable: {
                 // Ensure this device is discoverable by others
                 ensureDiscoverable();
@@ -661,7 +738,20 @@ public class BluetoothChatFragment extends Fragment {
                 boolean resultPhone = Utility.checkPermissionGallery(getActivity());
                 if (resultPhone) {
 
-                    File logFile = new File(Environment.getExternalStorageDirectory(), "wrms_station_error.txt");
+                    final File path =
+                            Environment.getExternalStoragePublicDirectory
+                                    (
+                                            //Environment.DIRECTORY_PICTURES
+                                            Environment.DIRECTORY_DCIM + "/wrms_bluetooth/"
+                                    );
+
+
+                    final File logFile = new File(path, "rainfall.txt");
+
+
+                    //  File logFile = new File(Environment.getExternalStorageDirectory(), "wrms_station_error.txt");
+                    String filePath = Environment.getExternalStorageDirectory().toString() + "/rainfall.txt";
+                    //   File logFile = new File(filePath);
                     if (logFile.exists()) {
 
                         Intent emailIntent = new Intent(Intent.ACTION_SEND);
@@ -775,9 +865,12 @@ public class BluetoothChatFragment extends Fragment {
     private List<WeatherSample> weatherSamples = new ArrayList<WeatherSample>();
 
 
-    public void readMessagePopup(final String str) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+    public void readMessagePopup(final String str, int countttt) {
+
+
+       /* AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
         alertDialog.setTitle("Received Rainfall");
+
 
         alertDialog.setMessage("Successfully received " + str);
         alertDialog.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
@@ -785,20 +878,111 @@ public class BluetoothChatFragment extends Fragment {
                 readWeatherStringData(str);
                 writeToFile(str,getActivity());
                 dialog.cancel();
+
+               *//* if (dates.size()>1) {
+                    for (int ii = 1; ii < dates.size(); ii++) {
+                        System.out.println(dates.get(ii));
+
+
+                        View view = getView();
+                        if (null != view) {
+
+                            String date1string = ""+dates.get(ii);
+
+                            if (date1string != null) {
+                                sendMessage("" + date1string);
+                            }
+                        }
+                    }
+                }*//*
             }
         });
 
-        alertDialog.show();
-    }
-    private void writeToFile(String data,Context context) {
-        try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("rainfall.txt", Context.MODE_PRIVATE));
-            outputStreamWriter.write(data);
-            outputStreamWriter.close();
+        alertDialog.show();*/
+
+        readWeatherStringData(str);
+        writeToFile(str, getActivity());
+        String date1string = null;
+        if (dates.size() > 1) {
+            if (countttt < dates.size() - 1) {
+
+                View view = getView();
+                if (null != view) {
+
+                     date1string = dates.get(countttt);
+
+                    if (date1string != null) {
+                        countttt++;
+                        counttt = countttt;
+                        recievedData = "";
+
+                        final String finalDate1string = date1string;
+                        new Thread(new Runnable() {
+                            public void run() {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    public void run() {
+
+                                        sendMessage("" + finalDate1string);
+                                    }
+                                });
+                            }
+                        }).start();
+
+
+                    }
+                }
+
+            } else {
+                successPopup(date1string);
+            }
+
+        } else {
+            successPopup(date1string);
         }
-        catch (IOException e) {
+
+    }
+
+    private void writeToFile(String data, Context context) {
+        /*  OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("rainfall.txt", Context.MODE_PRIVATE));
+          outputStreamWriter.write(data);
+          outputStreamWriter.close();
+
+*/
+
+        final File path =
+                Environment.getExternalStoragePublicDirectory
+                        (
+                                //Environment.DIRECTORY_PICTURES
+                                Environment.DIRECTORY_DCIM + "/wrms_bluetooth/"
+                        );
+
+        // Make sure the path directory exists.
+        if (!path.exists()) {
+            // Make it, if it doesn't exit
+            path.mkdirs();
+        }
+
+        final File file = new File(path, "rainfall.txt");
+
+        // Save your stream, don't forget to flush() it before closing it.
+
+        try {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+
+            Log.e("createdddd", "File write created: ");
+        } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
+
+
     }
 
     private void readWeatherData(File f) {
@@ -882,23 +1066,23 @@ public class BluetoothChatFragment extends Fragment {
 
     private void readWeatherStringData(String strrrrr) {
 
-        if (strrrrr!=null){
-            Log.v("itemssss1",strrrrr);
+        if (strrrrr != null) {
+            Log.v("itemssss1", strrrrr);
 
             String[] splits = strrrrr.split(";");
-            if (splits.length>1){
-                Log.v("itemssss2",strrrrr);
+            if (splits.length > 1) {
+                Log.v("itemssss2", strrrrr);
                 String ssttrr = splits[1];
-                String[] items=ssttrr.split("\n");
+                String[] items = ssttrr.split("\n");
                 weatherSamples = new ArrayList<WeatherSample>();
-                for (int i =0;i<items.length-1;i++){
-                    Log.v("itemssss3","0089uoiiohj");
+                for (int i = 0; i < items.length - 1; i++) {
+                    Log.v("itemssss3", "0089uoiiohj");
                     WeatherSample sample = new WeatherSample();
-                    String[] itemsss=items[i].split(",");
+                    String[] itemsss = items[i].split(",");
                     // Setters
-                    if (itemsss.length>2) {
+                    if (itemsss.length > 2) {
 
-                        Log.v("itemssss",itemsss[0]+"--"+itemsss[1]+"--"+itemsss[2]);
+                        Log.v("itemssss", itemsss[0] + "--" + itemsss[1] + "--" + itemsss[2]);
 
                         sample.setDate(itemsss[0]);
                         sample.setSumHours(itemsss[1]);
@@ -912,8 +1096,7 @@ public class BluetoothChatFragment extends Fragment {
         }
 
 
-
-        boolean flag = false;
+        boolean flag = true;
         String dddddaaatt = "";
         for (int i = 0; i < weatherSamples.size(); i++) {
             dddddaaatt = weatherSamples.get(i).getDate();
@@ -929,10 +1112,9 @@ public class BluetoothChatFragment extends Fragment {
                         do {
                             String dateString = cursor.getString(cursor.getColumnIndex(DBAdapter.DATE));
                             Log.v("savedate", "" + dateString + "---" + dddddaaatt);
-                            if (dateString != null && !dateString.equalsIgnoreCase(dddddaaatt)) {
-                                flag = true;
-                            } else {
+                            if (dateString != null && dateString.equalsIgnoreCase(dddddaaatt)) {
                                 flag = false;
+
                             }
 
                         } while (cursor.moveToNext());
@@ -982,9 +1164,78 @@ public class BluetoothChatFragment extends Fragment {
         values.put(DBAdapter.HOURS, hoursss);
         values.put(DBAdapter.RAINFALL, rainfalll);
 
-
         db.db.insert(DBAdapter.TABLE_DATE_RAINFALL, null, values);
 
         Log.v("data_rainfall", "" + values.toString());
+    }
+
+    private static List<String> getDates(String dateString1, String dateString2) {
+        ArrayList<String> dates = new ArrayList<String>();
+        DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
+
+        Date date1 = null;
+        Date date2 = null;
+
+        try {
+            date1 = df1.parse(dateString1);
+            date2 = df1.parse(dateString2);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(date1);
+
+
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date2);
+
+        while (!cal1.after(cal2)) {
+            // dates.add(cal1.getTime());
+            cal1.add(Calendar.DATE, 1);
+            Date st = cal1.getTime();
+
+            final int yyyy = cal1.get(Calendar.YEAR);
+            final int mm = cal1.get(Calendar.MONTH) + 1;
+            final int dd = cal1.get(Calendar.DAY_OF_MONTH);
+
+            String mmString = null;
+            String ddString = null;
+            String yyyyString = null;
+
+            yyyyString = "" + yyyy;
+            if (mm < 10) {
+                mmString = "0" + mm;
+            } else {
+                mmString = "" + mm;
+            }
+            if (dd < 10) {
+                ddString = "0" + dd;
+            } else {
+                ddString = "" + dd;
+            }
+
+            String stringDatee = ddString + "" + mmString + "" + yyyyString;
+            Log.v("dadadadada", stringDatee + "");
+            dates.add(stringDatee);
+
+        }
+        return dates;
+    }
+
+
+    public void successPopup(String str) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+        alertDialog.setTitle("Received Rainfall ");
+        alertDialog.setMessage("Successfully received all data ");
+        alertDialog.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
+
     }
 }
